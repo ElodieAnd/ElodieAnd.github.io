@@ -318,9 +318,14 @@
   #admin-save-bar {
     padding: .9rem 1.5rem; background: linear-gradient(135deg, #d1fae5, #a7f3d0);
     border-top: 2px solid #6ee7b7; display: flex; align-items: center;
-    justify-content: space-between; flex-shrink: 0; gap: 1rem;
+    justify-content: space-between; flex-shrink: 0; gap: .75rem;
   }
-  #admin-save-bar span { font-weight: 700; font-size: .85rem; color: #065f46; }
+  #admin-reset-btn {
+    background: none; border: 1.5px solid #6ee7b7; color: #065f46;
+    font-family: 'Nunito', sans-serif; font-weight: 700; font-size: .8rem;
+    padding: .45rem 1rem; border-radius: 999px; cursor: pointer; transition: all .2s;
+  }
+  #admin-reset-btn:hover { background: rgba(16,185,129,.15); }
   #admin-save-btn {
     background: #10b981; color: white; border: none;
     font-family: 'Pacifico', cursive; font-size: .88rem;
@@ -328,6 +333,19 @@
     transition: all .2s; box-shadow: 0 3px 10px rgba(16,185,129,.3);
   }
   #admin-save-btn:hover { background: #059669; transform: scale(1.05); }
+  #admin-save-btn.saved { background: #059669; }
+  .storage-badge {
+    position: fixed; bottom: 1.2rem; left: 50%; transform: translateX(-50%);
+    background: #10b981; color: white; border-radius: 999px;
+    padding: .5rem 1.2rem; font-weight: 700; font-size: .82rem;
+    z-index: 9999; box-shadow: 0 4px 16px rgba(16,185,129,.4);
+    animation: badgePop .3s cubic-bezier(.34,1.56,.64,1) both;
+    pointer-events: none;
+  }
+  @keyframes badgePop {
+    from { opacity:0; transform: translateX(-50%) scale(.8); }
+    to   { opacity:1; transform: translateX(-50%) scale(1); }
+  }
 
   #emoji-picker {
     position: fixed; z-index: 3000; background: white; border-radius: 16px;
@@ -393,8 +411,8 @@
     <button class="admin-add-cat" id="admin-add-cat-btn">＋ Nouvelle catégorie</button>
   </div>
   <div id="admin-save-bar">
-    <span>✅ Modifications non sauvegardées</span>
-    <button id="admin-save-btn">Sauvegarder</button>
+    <button id="admin-reset-btn" title="Remettre les paramètres par défaut">🔄 Défaut</button>
+    <button id="admin-save-btn">Sauvegarder ✓</button>
   </div>
 </div>
 
@@ -1323,9 +1341,24 @@ function adminSave() {
       }))
     });
   });
-  // Rebuild progress and restart from theme 0
+  // Sauvegarde dans localStorage
+  saveThemesToStorage();
+  showSavedToast();
   closeAdmin();
   restart();
+}
+
+function showSavedToast() {
+  const badge = document.createElement('div');
+  badge.className = 'storage-badge';
+  badge.textContent = '✓ Paramètres sauvegardés !';
+  document.body.appendChild(badge);
+  setTimeout(() => badge.remove(), 2200);
+}
+
+function adminReset() {
+  resetStorage();
+  location.reload();
 }
 
 // ─── EMOJI PICKER ────────────────────────────────────────────────────────────
@@ -1395,13 +1428,121 @@ function selectEmoji(em) {
   renderAdmin();
 }
 
+// ─── PERSISTANCE localStorage ────────────────────────────────────────────────
+const STORAGE_KEY = 'randomnails_themes_v1';
+
+function saveThemesToStorage() {
+  // On sérialise uniquement les champs éditables (pas les fonctions draw)
+  const serialisable = THEMES.map(t => ({
+    id:       t.id,
+    label:    t.label,
+    emoji:    t.emoji,
+    subtitle: t.subtitle,
+    single:   t.single,
+    cards: t.cards.map(c => ({
+      label:  c.label,
+      emoji:  c.emoji,
+      bg:     c.bg,
+      colors: c.colors || null
+    }))
+  }));
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(serialisable));
+  } catch(e) {
+    console.warn('Impossible de sauvegarder dans localStorage', e);
+  }
+}
+
+function loadThemesFromStorage() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return false;
+    const saved = JSON.parse(raw);
+    if (!Array.isArray(saved) || saved.length === 0) return false;
+
+    // Réassociation des fonctions draw à partir du label de la carte
+    const drawMap = buildDrawMap();
+
+    THEMES.length = 0;
+    saved.forEach(t => {
+      THEMES.push({
+        ...t,
+        cards: t.cards.map(c => ({
+          ...c,
+          bg:     c.bg     || ['#fce7f3','#fbcfe8'],
+          colors: c.colors || undefined,
+          draw:   drawMap[c.label] || drawMap['__default__']
+        }))
+      });
+    });
+    return true;
+  } catch(e) {
+    console.warn('Erreur lors du chargement depuis localStorage', e);
+    return false;
+  }
+}
+
+function buildDrawMap() {
+  // Map label → fonction draw pour la réassociation après désérialisation
+  return {
+    // Longueur
+    'Court':          drawCourt,
+    'Moyen':          drawMoyen,
+    'Long':           drawLong,
+    // Forme
+    'Amande':         drawAmande,
+    'Rond':           drawRond,
+    'Carré':          drawCarre,
+    'Ballerine':      drawBallerine,
+    'Pointu':         drawPointu,
+    // Couleurs
+    'Rouge':          drawColorNail,
+    'Rose':           drawColorNail,
+    'Bleu':           drawColorNail,
+    'Vert':           drawColorNail,
+    'Violet':         drawColorNail,
+    'Nude':           drawColorNail,
+    'Noir':           drawColorNail,
+    'Blanc':          drawColorNail,
+    // Intensité
+    'Clair':          drawClair,
+    'Foncé':          drawFonce,
+    'Flashy':         drawFlashy,
+    // Finition
+    'Chrome':         drawChrome,
+    'Irisé':          drawIrise,
+    'Uni':            drawUni,
+    'Brillant':       drawBrillant,
+    'Mat':            drawMat,
+    'Holographique':  drawHolo,
+    // Décorations
+    'Strass':         drawStrass,
+    'Perles':         drawPerles,
+    'Fleurs':         drawFleurs,
+    'Étoiles':        drawEtoiles,
+    'Marbré':         drawMarbre,
+    'Léopard':        drawLeopard,
+    'French':         drawFrench,
+    'Dégradé':        drawDegrade,
+    // Défaut pour les cartes créées en admin
+    '__default__':    drawUni
+  };
+}
+
+function resetStorage() {
+  localStorage.removeItem(STORAGE_KEY);
+}
+
 // ─── INIT ────────────────────────────────────────────────────────────────────
+// Charge les thèmes sauvegardés s'ils existent
+loadThemesFromStorage();
 showTheme(0);
 
 document.getElementById('admin-btn').addEventListener('click', openAdmin);
 document.getElementById('admin-close').addEventListener('click', closeAdmin);
 document.getElementById('admin-overlay').addEventListener('click', closeAdmin);
 document.getElementById('admin-save-btn').addEventListener('click', adminSave);
+document.getElementById('admin-reset-btn').addEventListener('click', adminReset);
 document.getElementById('admin-add-cat-btn').addEventListener('click', adminAddCategory);
 document.getElementById('emoji-search').addEventListener('input', function() { filterEmoji(this.value); });
 </script>
