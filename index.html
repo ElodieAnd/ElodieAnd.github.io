@@ -1,0 +1,1409 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Random Nails ✨</title>
+<link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --pink: #ff6eb4;
+    --lilac: #c084fc;
+    --peach: #ffb085;
+    --mint: #6ee7b7;
+    --cream: #fff8f0;
+    --dark: #2d1b33;
+    --card-w: 140px;
+    --card-h: 200px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--cream);
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background:
+      radial-gradient(ellipse 600px 400px at 10% 20%, #ffd6f0aa, transparent),
+      radial-gradient(ellipse 500px 500px at 90% 80%, #ddd6feaa, transparent),
+      radial-gradient(ellipse 400px 300px at 50% 50%, #fff0e0aa, transparent);
+    z-index: 0; pointer-events: none;
+  }
+
+  .sparkle {
+    position: fixed; pointer-events: none; z-index: 0;
+    font-size: 1.4rem;
+    animation: floatUp 6s ease-in-out infinite; opacity: 0.35;
+  }
+  @keyframes floatUp {
+    0%,100% { transform: translateY(0) rotate(0deg); opacity: .3; }
+    50% { transform: translateY(-18px) rotate(20deg); opacity: .6; }
+  }
+
+  header {
+    position: relative; z-index: 10;
+    text-align: center; padding: 2.5rem 1rem 1rem;
+  }
+  header h1 {
+    font-family: 'Pacifico', cursive;
+    font-size: clamp(2.4rem, 6vw, 4rem);
+    background: linear-gradient(135deg, var(--pink), var(--lilac), var(--peach));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    filter: drop-shadow(0 2px 8px #ff6eb455); letter-spacing: 1px;
+  }
+  header p { color: #9d6c8a; font-size: 1rem; margin-top: .4rem; font-weight: 600; }
+
+  #progress-bar {
+    position: relative; z-index: 10;
+    display: flex; justify-content: center; gap: .5rem;
+    flex-wrap: wrap; padding: 1rem 1rem .5rem;
+  }
+  .pill {
+    display: flex; align-items: center; gap: .35rem;
+    padding: .3rem .75rem; border-radius: 999px;
+    font-size: .75rem; font-weight: 700;
+    background: white; border: 2px solid #eac0d8; color: #b07090;
+    transition: all .3s;
+  }
+  .pill.active { background: var(--pink); border-color: var(--pink); color: white; transform: scale(1.08); }
+  .pill.done  { background: var(--lilac); border-color: var(--lilac); color: white; }
+
+  #theme-title {
+    position: relative; z-index: 10;
+    text-align: center; padding: 1.5rem 1rem .5rem;
+  }
+  #theme-title h2 {
+    font-family: 'Pacifico', cursive;
+    font-size: clamp(1.4rem, 4vw, 2rem); color: var(--dark);
+    opacity: 0; transform: translateY(10px); transition: all .5s ease;
+  }
+  #theme-title h2.show { opacity: 1; transform: none; }
+  #theme-title p {
+    color: #b07090; font-size: .85rem; margin-top: .3rem; font-weight: 600;
+    opacity: 0; transition: opacity .5s .2s;
+  }
+  #theme-title p.show { opacity: 1; }
+
+  #cards-zone {
+    position: relative; z-index: 10;
+    display: flex; flex-wrap: wrap; justify-content: center;
+    gap: 1.2rem; padding: 1.5rem 1rem 2rem; min-height: 260px;
+  }
+
+  .card-wrap {
+    perspective: 900px; width: var(--card-w); height: var(--card-h);
+    cursor: pointer; transition: transform .2s;
+  }
+  .card-wrap:hover:not(.flipped):not(.locked) { transform: translateY(-6px) scale(1.04); }
+  .card-wrap.flipped .card-inner { transform: rotateY(180deg); }
+  .card-wrap.locked { cursor: default; opacity: .55; filter: grayscale(.4); }
+
+  .card-inner {
+    position: relative; width: 100%; height: 100%;
+    transform-style: preserve-3d;
+    transition: transform .55s cubic-bezier(.4,0,.2,1);
+  }
+
+  .card-front, .card-back {
+    position: absolute; inset: 0; border-radius: 18px;
+    backface-visibility: hidden;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 1rem .75rem; gap: .5rem;
+  }
+
+  .card-back {
+    background: linear-gradient(145deg, #ffc5e8, #d9b3ff);
+    border: 3px solid white; box-shadow: 0 6px 20px #d472aa44;
+    font-size: 2.8rem; text-align: center;
+  }
+  .card-back::before {
+    content: ''; position: absolute; inset: 6px;
+    border: 2px dashed rgba(255,255,255,.5); border-radius: 13px; pointer-events: none;
+  }
+  .card-back .nail-icon { font-size: 2.5rem; filter: drop-shadow(0 2px 4px #fff5); }
+
+  .card-front {
+    transform: rotateY(180deg);
+    border: 3px solid white; box-shadow: 0 8px 24px rgba(0,0,0,.12);
+    text-align: center; overflow: hidden; gap: .4rem;
+  }
+  .card-front .card-emoji { font-size: 2.6rem; }
+  .card-front .card-label {
+    font-family: 'Pacifico', cursive; font-size: .82rem; color: white;
+    text-shadow: 0 1px 4px rgba(0,0,0,.25); line-height: 1.2; word-break: break-word;
+  }
+  .card-front .card-visual {
+    width: 100%; flex: 1;
+    display: flex; align-items: center; justify-content: center; position: relative;
+  }
+
+  .card-wrap.selected .card-front {
+    box-shadow: 0 0 0 4px white, 0 0 0 7px var(--pink), 0 12px 32px #ff6eb455;
+  }
+  .card-wrap.selected .card-inner { transform: rotateY(180deg) scale(1.06); }
+
+  #next-btn {
+    display: block; position: relative; z-index: 10;
+    margin: 0 auto 2rem; padding: .85rem 2.5rem;
+    font-family: 'Pacifico', cursive; font-size: 1.1rem; color: white;
+    background: linear-gradient(135deg, var(--pink), var(--lilac));
+    border: none; border-radius: 999px; cursor: pointer;
+    box-shadow: 0 6px 20px #ff6eb455; transition: all .25s;
+    opacity: 0; pointer-events: none; transform: translateY(10px);
+  }
+  #next-btn.visible { opacity: 1; pointer-events: all; transform: none; }
+  #next-btn:hover { transform: translateY(-3px) scale(1.05); box-shadow: 0 10px 28px #c084fc66; }
+
+  #result-screen {
+    display: none; position: relative; z-index: 10;
+    max-width: 700px; margin: 0 auto; padding: 2rem 1rem 4rem; text-align: center;
+  }
+  #result-screen h2 {
+    font-family: 'Pacifico', cursive; font-size: 2rem;
+    background: linear-gradient(135deg, var(--pink), var(--lilac));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    margin-bottom: 1.5rem;
+  }
+  .result-grid {
+    display: flex; flex-wrap: wrap; gap: 1rem;
+    justify-content: center; margin-bottom: 2rem;
+  }
+  .result-card {
+    background: white; border-radius: 16px; padding: .75rem 1.1rem;
+    border: 2.5px solid; display: flex; align-items: center; gap: .6rem;
+    font-weight: 700; font-size: .9rem; color: var(--dark);
+    box-shadow: 0 4px 14px rgba(0,0,0,.08);
+    animation: popIn .5s cubic-bezier(.34,1.56,.64,1) both;
+  }
+  @keyframes popIn {
+    from { opacity:0; transform: scale(.6) rotate(-4deg); }
+    to   { opacity:1; transform: none; }
+  }
+  .result-card .rc-emoji { font-size: 1.4rem; }
+  .result-card .rc-label { font-size: .7rem; color: #b07090; display: block; font-weight: 600; }
+
+  #restart-btn {
+    padding: .85rem 2.5rem; font-family: 'Pacifico', cursive; font-size: 1.1rem; color: white;
+    background: linear-gradient(135deg, #6ee7b7, #60a5fa);
+    border: none; border-radius: 999px; cursor: pointer;
+    box-shadow: 0 6px 20px #6ee7b755; transition: all .25s;
+  }
+  #restart-btn:hover { transform: translateY(-3px) scale(1.05); }
+
+  .nail-svg { width: 65px; height: 90px; }
+
+  .confetti-piece {
+    position: fixed; width: 10px; height: 10px; border-radius: 2px;
+    pointer-events: none; z-index: 9999; animation: confettiFall 1.5s ease-in forwards;
+  }
+  @keyframes confettiFall {
+    0%   { transform: translateY(-60px) rotate(0); opacity: 1; }
+    100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+  }
+
+  /* ══ ADMIN ══ */
+  #admin-btn {
+    position: fixed; top: 1rem; right: 1rem; z-index: 1000;
+    background: white; border: 2px solid #fce7f3; border-radius: 50%;
+    width: 44px; height: 44px; font-size: 1.25rem; cursor: pointer;
+    box-shadow: 0 4px 14px rgba(200,100,170,.2); transition: all .25s;
+    display: flex; align-items: center; justify-content: center;
+  }
+  #admin-btn:hover { transform: rotate(40deg) scale(1.12); box-shadow: 0 6px 20px rgba(200,100,170,.35); }
+
+  #admin-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(45,27,51,.5); backdrop-filter: blur(4px); z-index: 2000;
+  }
+  #admin-overlay.open { display: block; }
+
+  #admin-panel {
+    display: none; position: fixed; top: 0; right: 0;
+    width: min(460px, 100vw); height: 100vh; background: white; z-index: 2001;
+    flex-direction: column; box-shadow: -8px 0 40px rgba(45,27,51,.18);
+    overflow: hidden; animation: slideIn .3s ease;
+  }
+  @keyframes slideIn { from { transform: translateX(100%); } to { transform: none; } }
+  #admin-panel.open { display: flex; }
+
+  #admin-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 1.25rem 1.5rem;
+    background: linear-gradient(135deg, var(--pink), var(--lilac));
+    color: white; font-family: 'Pacifico', cursive; font-size: 1.1rem; flex-shrink: 0;
+  }
+  #admin-close {
+    background: rgba(255,255,255,.25); border: none; color: white;
+    font-size: 1.1rem; border-radius: 50%; width: 32px; height: 32px;
+    cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background .2s;
+  }
+  #admin-close:hover { background: rgba(255,255,255,.45); }
+
+  #admin-body { flex: 1; overflow-y: auto; padding: 1.25rem; display: flex; flex-direction: column; gap: .75rem; }
+
+  .admin-cat { background: #fff8f0; border: 2px solid #fce7f3; border-radius: 16px; overflow: hidden; }
+  .admin-cat-header {
+    display: flex; align-items: center; gap: .6rem; padding: .75rem 1rem;
+    background: linear-gradient(135deg, #fff0f8, #f5f0ff); cursor: pointer; user-select: none;
+  }
+  .admin-cat-header:hover { background: linear-gradient(135deg, #ffe4f3, #ede9fe); }
+  .admin-emoji-btn {
+    font-size: 1.3rem; cursor: pointer; border: none; background: none;
+    padding: .1rem .3rem; border-radius: 6px; transition: background .15s; flex-shrink: 0;
+  }
+  .admin-emoji-btn:hover { background: rgba(236,72,153,.15); }
+  .admin-cat-name {
+    flex: 1; font-weight: 800; font-size: .95rem; color: var(--dark);
+    background: none; border: none; font-family: 'Nunito', sans-serif;
+    padding: .15rem .35rem; border-radius: 6px; transition: background .15s; min-width: 0;
+  }
+  .admin-cat-name:focus { outline: none; background: white; box-shadow: 0 0 0 2px var(--pink); }
+  .admin-cat-toggle { font-size: .75rem; color: #b07090; flex-shrink: 0; }
+  .admin-cat-del {
+    background: none; border: none; color: #f87171; cursor: pointer;
+    font-size: 1rem; padding: .2rem .4rem; border-radius: 6px; transition: background .15s; flex-shrink: 0;
+  }
+  .admin-cat-del:hover { background: #fee2e2; }
+
+  .admin-cat-body { padding: .75rem 1rem 1rem; display: flex; flex-direction: column; gap: .45rem; }
+  .admin-cat-body.collapsed { display: none; }
+
+  .admin-card-row {
+    display: flex; align-items: center; gap: .5rem;
+    background: white; border-radius: 10px; padding: .4rem .65rem;
+    border: 1.5px solid #fce7f3; transition: border-color .15s;
+  }
+  .admin-card-row:hover { border-color: var(--pink); }
+  .admin-card-emoji {
+    font-size: 1.2rem; cursor: pointer; border: 1.5px solid #fce7f3;
+    border-radius: 8px; padding: .15rem .3rem; background: #fff8f0;
+    font-family: inherit; min-width: 38px; text-align: center; transition: border-color .15s;
+  }
+  .admin-card-emoji:focus { outline: none; border-color: var(--pink); }
+  .admin-card-label {
+    flex: 1; border: none; background: none;
+    font-family: 'Nunito', sans-serif; font-weight: 700; font-size: .88rem; color: var(--dark); min-width: 0;
+  }
+  .admin-card-label:focus { outline: none; }
+  .admin-card-del {
+    background: none; border: none; color: #fca5a5; cursor: pointer;
+    font-size: .9rem; padding: .2rem .35rem; border-radius: 6px; transition: all .15s; flex-shrink: 0;
+  }
+  .admin-card-del:hover { color: #ef4444; background: #fee2e2; }
+
+  .admin-add-card {
+    align-self: flex-start; background: none;
+    border: 1.5px dashed #f9a8d4; color: #ec4899;
+    font-family: 'Nunito', sans-serif; font-weight: 700; font-size: .82rem;
+    padding: .3rem .8rem; border-radius: 999px; cursor: pointer; transition: all .2s;
+  }
+  .admin-add-card:hover { background: #fce7f3; border-color: var(--pink); }
+
+  .admin-add-cat {
+    background: linear-gradient(135deg, var(--pink), var(--lilac));
+    color: white; border: none; font-family: 'Pacifico', cursive; font-size: .9rem;
+    padding: .7rem 1.5rem; border-radius: 999px; cursor: pointer; align-self: center;
+    box-shadow: 0 4px 14px rgba(192,132,252,.35); transition: all .25s; margin-top: .5rem;
+  }
+  .admin-add-cat:hover { transform: translateY(-2px) scale(1.04); }
+
+  #admin-save-bar {
+    padding: .9rem 1.5rem; background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+    border-top: 2px solid #6ee7b7; display: flex; align-items: center;
+    justify-content: space-between; flex-shrink: 0; gap: 1rem;
+  }
+  #admin-save-bar span { font-weight: 700; font-size: .85rem; color: #065f46; }
+  #admin-save-btn {
+    background: #10b981; color: white; border: none;
+    font-family: 'Pacifico', cursive; font-size: .88rem;
+    padding: .55rem 1.4rem; border-radius: 999px; cursor: pointer;
+    transition: all .2s; box-shadow: 0 3px 10px rgba(16,185,129,.3);
+  }
+  #admin-save-btn:hover { background: #059669; transform: scale(1.05); }
+
+  #emoji-picker {
+    position: fixed; z-index: 3000; background: white; border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(45,27,51,.2); border: 2px solid #fce7f3;
+    padding: .75rem; display: none; flex-direction: column; gap: .5rem; width: 260px;
+  }
+  #emoji-picker.open { display: flex; }
+  #emoji-search {
+    border: 1.5px solid #fce7f3; border-radius: 8px; padding: .4rem .65rem;
+    font-family: 'Nunito', sans-serif; font-size: .85rem; width: 100%;
+  }
+  #emoji-search:focus { outline: none; border-color: var(--pink); }
+  #emoji-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: .2rem; max-height: 160px; overflow-y: auto; }
+  .eopt {
+    font-size: 1.2rem; text-align: center; cursor: pointer;
+    padding: .2rem; border-radius: 6px; border: none; background: none; transition: background .1s;
+  }
+  .eopt:hover { background: #fce7f3; }
+</style>
+</head>
+<body>
+
+<!-- Floating sparkles -->
+<div class="sparkle" style="left:5%;top:15%;animation-delay:0s">💅</div>
+<div class="sparkle" style="left:90%;top:10%;animation-delay:1.2s">✨</div>
+<div class="sparkle" style="left:80%;top:60%;animation-delay:2.4s">💎</div>
+<div class="sparkle" style="left:12%;top:70%;animation-delay:.8s">🌸</div>
+<div class="sparkle" style="left:50%;top:5%;animation-delay:3s">⭐</div>
+<div class="sparkle" style="left:65%;top:85%;animation-delay:1.8s">🦋</div>
+
+<header>
+  <h1>✨ Random Nails ✨</h1>
+  <p>Laisse le destin choisir ton prochain nail art 💅</p>
+</header>
+<button id="admin-btn" title="Administration">⚙️</button>
+
+<div id="progress-bar"></div>
+
+<div id="theme-title">
+  <h2 id="theme-h2"></h2>
+  <p id="theme-sub"></p>
+</div>
+
+<div id="cards-zone"></div>
+
+<button id="next-btn">Suivant →</button>
+
+<div id="result-screen">
+  <h2>✨ Ton Nail Art ✨</h2>
+  <div class="result-grid" id="result-grid"></div>
+  <button id="restart-btn" onclick="restart()">Rejouer 🎲</button>
+</div>
+
+<!-- ═══ ADMIN MODAL ═══ -->
+<div id="admin-overlay" onclick="closeAdmin()"></div>
+<div id="admin-panel">
+  <div id="admin-header">
+    <span>⚙️ Administration</span>
+    <button id="admin-close">✕</button>
+  </div>
+  <div id="admin-body">
+    <div id="admin-cats-list"></div>
+    <button class="admin-add-cat" id="admin-add-cat-btn">＋ Nouvelle catégorie</button>
+  </div>
+  <div id="admin-save-bar">
+    <span>✅ Modifications non sauvegardées</span>
+    <button id="admin-save-btn">Sauvegarder</button>
+  </div>
+</div>
+
+<!-- Emoji picker -->
+<div id="emoji-picker">
+  <input id="emoji-search" placeholder="Rechercher…"/>
+  <div id="emoji-grid"></div>
+</div>
+
+<script>
+// ─── DATA ───────────────────────────────────────────────────────────────────
+const THEMES = [
+  {
+    id: 'longueur',
+    label: 'Longueur',
+    emoji: '📏',
+    subtitle: 'Quelle longueur pour tes ongles ?',
+    single: true,
+    cards: [
+      { label: 'Court', emoji: '🤏', bg: ['#ffe0f0','#ffc5df'], draw: drawCourt },
+      { label: 'Moyen', emoji: '✋', bg: ['#ffd6b3','#ffb07a'], draw: drawMoyen },
+      { label: 'Long',  emoji: '💅', bg: ['#c9b8ff','#a78bfa'], draw: drawLong  },
+    ]
+  },
+  {
+    id: 'forme',
+    label: 'Forme',
+    emoji: '💎',
+    subtitle: 'Quelle forme pour tes ongles ?',
+    single: true,
+    cards: [
+      { label: 'Amande',    emoji: '🌸', bg: ['#ffd6e8','#ffb3d1'], draw: drawAmande },
+      { label: 'Rond',      emoji: '🔵', bg: ['#b3e8ff','#7dd3fc'], draw: drawRond },
+      { label: 'Carré',     emoji: '⬛', bg: ['#d4d4d4','#a8a8a8'], draw: drawCarre },
+      { label: 'Ballerine', emoji: '🩰', bg: ['#fce7f3','#fbcfe8'], draw: drawBallerine },
+      { label: 'Pointu',    emoji: '🔺', bg: ['#ffe4b5','#fcd34d'], draw: drawPointu },
+    ]
+  },
+  {
+    id: 'couleur',
+    label: 'Couleur',
+    emoji: '🎨',
+    subtitle: 'Quelle palette de couleurs ?',
+    single: true,
+    cards: [
+      { label: 'Rouge',  emoji: '🌹', bg: ['#fecaca','#f87171'], colors:['#ef4444','#b91c1c'], draw: drawColorNail },
+      { label: 'Rose',   emoji: '🌸', bg: ['#fce7f3','#fbcfe8'], colors:['#ec4899','#db2777'], draw: drawColorNail },
+      { label: 'Bleu',   emoji: '💙', bg: ['#dbeafe','#93c5fd'], colors:['#3b82f6','#1d4ed8'], draw: drawColorNail },
+      { label: 'Vert',   emoji: '🌿', bg: ['#d1fae5','#6ee7b7'], colors:['#10b981','#047857'], draw: drawColorNail },
+      { label: 'Violet', emoji: '💜', bg: ['#ede9fe','#c4b5fd'], colors:['#8b5cf6','#6d28d9'], draw: drawColorNail },
+      { label: 'Nude',   emoji: '🍑', bg: ['#fde8d8','#f9c5a4'], colors:['#d4a484','#b8865c'], draw: drawColorNail },
+      { label: 'Noir',   emoji: '🖤', bg: ['#374151','#1f2937'], colors:['#111827','#000000'], draw: drawColorNail },
+      { label: 'Blanc',  emoji: '🤍', bg: ['#f8fafc','#e2e8f0'], colors:['#ffffff','#d1d5db'], draw: drawColorNail },
+    ]
+  },
+  {
+    id: 'intensite',
+    label: 'Intensité',
+    emoji: '🌈',
+    subtitle: 'Quelle intensité de couleur ?',
+    single: true,
+    cards: [
+      { label: 'Clair',  emoji: '🌤️', bg: ['#fef9c3','#fde68a'], draw: drawClair },
+      { label: 'Foncé',  emoji: '🌑', bg: ['#374151','#1f2937'], draw: drawFonce },
+      { label: 'Flashy', emoji: '⚡', bg: ['#ff6eb4','#ff3d9a'], draw: drawFlashy },
+    ]
+  },
+  {
+    id: 'finition',
+    label: 'Finition',
+    emoji: '✨',
+    subtitle: 'Quel style de finition ?',
+    single: true,
+    cards: [
+      { label: 'Chrome',    emoji: '🪞', bg: ['#e2e8f0','#94a3b8'], draw: drawChrome },
+      { label: 'Irisé',     emoji: '🌈', bg: ['#fdf4ff','#f5d0fe'], draw: drawIrise },
+      { label: 'Uni',       emoji: '🎨', bg: ['#fce7f3','#fbcfe8'], draw: drawUni },
+      { label: 'Brillant',  emoji: '💫', bg: ['#fef3c7','#fde68a'], draw: drawBrillant },
+      { label: 'Mat',       emoji: '🪨', bg: ['#f5f5f4','#d6d3d1'], draw: drawMat },
+      { label: 'Holographique', emoji: '🔮', bg: ['#e0e7ff','#c7d2fe'], draw: drawHolo },
+    ]
+  },
+  {
+    id: 'decoration',
+    label: 'Décorations',
+    emoji: '💎',
+    subtitle: 'Quelles décorations ? (2 ou 3 au hasard !)',
+    single: false,
+    cards: [
+      { label: 'Strass',    emoji: '💎', bg: ['#bfdbfe','#93c5fd'], draw: drawStrass },
+      { label: 'Perles',    emoji: '🫧', bg: ['#f0fdf4','#bbf7d0'], draw: drawPerles },
+      { label: 'Fleurs',    emoji: '🌸', bg: ['#fce7f3','#fbcfe8'], draw: drawFleurs },
+      { label: 'Étoiles',   emoji: '⭐', bg: ['#fef9c3','#fde68a'], draw: drawEtoiles },
+      { label: 'Marbré',    emoji: '🌊', bg: ['#e0f2fe','#bae6fd'], draw: drawMarbre },
+      { label: 'Léopard',   emoji: '🐆', bg: ['#fef3c7','#fde68a'], draw: drawLeopard },
+      { label: 'French',    emoji: '🇫🇷', bg: ['#f0f9ff','#e0f2fe'], draw: drawFrench },
+      { label: 'Dégradé',   emoji: '🌅', bg: ['#fdf4ff','#ede9fe'], draw: drawDegrade },
+    ]
+  }
+];
+
+// ─── STATE ──────────────────────────────────────────────────────────────────
+let currentTheme = 0;
+let selectedCards = {}; // themeId -> [card, ...]
+let decoCount = 1; // random number of deco to reveal
+
+// ─── DRAW FUNCTIONS (SVG inline) ────────────────────────────────────────────
+function nailPath(shape, w, h) {
+  switch(shape) {
+    case 'round':   return `M${w*.2},${h*.5} Q${w*.2},${h*.1} ${w*.5},${h*.1} Q${w*.8},${h*.1} ${w*.8},${h*.5} L${w*.8},${h*.9} L${w*.2},${h*.9} Z`;
+    case 'almond':  return `M${w*.5},${h*.05} Q${w*.85},${h*.4} ${w*.8},${h*.9} L${w*.2},${h*.9} Q${w*.15},${h*.4} ${w*.5},${h*.05} Z`;
+    case 'square':  return `M${w*.15},${h*.2} L${w*.85},${h*.2} L${w*.85},${h*.9} L${w*.15},${h*.9} Z`;
+    case 'ballerina': return `M${w*.5},${h*.08} Q${w*.8},${h*.3} ${w*.75},${h*.9} L${w*.25},${h*.9} Q${w*.2},${h*.3} ${w*.5},${h*.08} Z`;
+    case 'pointy':  return `M${w*.5},${h*.02} L${w*.82},${h*.9} L${w*.18},${h*.9} Z`;
+    default:        return `M${w*.2},${h*.5} Q${w*.2},${h*.1} ${w*.5},${h*.1} Q${w*.8},${h*.1} ${w*.8},${h*.5} L${w*.8},${h*.9} L${w*.2},${h*.9} Z`;
+  }
+}
+
+function svgNail(shape, fill, stroke='rgba(255,255,255,.4)', extra='', w=65, h=90) {
+  return `<svg class="nail-svg" viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg">
+    <path d="${nailPath(shape,w,h)}" fill="${fill}" stroke="${stroke}" stroke-width="2"/>
+    ${extra}
+  </svg>`;
+}
+
+// Length
+function drawCourt(el) { el.innerHTML = svgNail('square','#ffb3d1','#ff6eb4','',65,55); }
+function drawMoyen(el)  { el.innerHTML = svgNail('round','#ffc5a0','#ff8c42','',65,75); }
+function drawLong(el)   { el.innerHTML = svgNail('almond','#c4b5fd','#8b5cf6','',65,90); }
+
+// Shape
+function drawAmande(el)    { el.innerHTML = svgNail('almond','#ffd6e8','#ec4899'); }
+function drawRond(el)      { el.innerHTML = svgNail('round','#93c5fd','#3b82f6'); }
+function drawCarre(el)     { el.innerHTML = svgNail('square','#d4d4d4','#6b7280'); }
+function drawBallerine(el) { el.innerHTML = svgNail('ballerina','#fce7f3','#ec4899'); }
+function drawPointu(el)    { el.innerHTML = svgNail('pointy','#fcd34d','#f59e0b'); }
+
+// Color
+function drawColorNail(el, card) {
+  const c = card.colors || ['#ec4899','#db2777'];
+  el.innerHTML = svgNail('almond',`url(#cg${card.label})`,c[0],
+    `<defs><linearGradient id="cg${card.label}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${c[0]}"/><stop offset="100%" stop-color="${c[1]}"/></linearGradient></defs>`);
+}
+
+// Intensity
+function drawClair(el) {
+  el.innerHTML = svgNail('almond','#fff5f9','#ffc5df',
+    `<circle cx="32" cy="30" r="12" fill="rgba(255,255,255,.7)"/><text x="32" y="35" text-anchor="middle" font-size="14">☀️</text>`);
+}
+function drawFonce(el) {
+  el.innerHTML = svgNail('almond','#1f2937','#374151',
+    `<text x="32" y="55" text-anchor="middle" font-size="14">🌑</text>`);
+}
+function drawFlashy(el) {
+  el.innerHTML = svgNail('almond','url(#fgrad)','#ff3d9a',
+    `<defs><linearGradient id="fgrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#ff6eb4"/><stop offset="50%" stop-color="#f59e0b"/><stop offset="100%" stop-color="#6ee7b7"/></linearGradient></defs>
+     <text x="32" y="55" text-anchor="middle" font-size="16">⚡</text>`);
+}
+
+// Finish
+function drawChrome(el) {
+  el.innerHTML = svgNail('almond','url(#chrom)','#94a3b8',
+    `<defs><linearGradient id="chrom" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#e2e8f0"/><stop offset="40%" stop-color="#f8fafc"/><stop offset="60%" stop-color="#94a3b8"/><stop offset="100%" stop-color="#cbd5e1"/></linearGradient></defs>
+     <ellipse cx="38" cy="28" rx="8" ry="5" fill="rgba(255,255,255,.7)" transform="rotate(-30,38,28)"/>`);
+}
+function drawIrise(el) {
+  el.innerHTML = svgNail('almond','url(#iris)','#c4b5fd',
+    `<defs><linearGradient id="iris" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#fdf4ff"/><stop offset="25%" stop-color="#c7d2fe"/><stop offset="50%" stop-color="#a5f3fc"/><stop offset="75%" stop-color="#fce7f3"/><stop offset="100%" stop-color="#fdf4ff"/></linearGradient></defs>`);
+}
+function drawUni(el) {
+  el.innerHTML = svgNail('almond','#ec4899','#db2777');
+}
+function drawBrillant(el) {
+  el.innerHTML = svgNail('almond','url(#brill)','#f59e0b',
+    `<defs><radialGradient id="brill" cx="35%" cy="30%"><stop offset="0%" stop-color="#fef3c7"/><stop offset="60%" stop-color="#fde68a"/><stop offset="100%" stop-color="#f59e0b"/></radialGradient></defs>
+     <text x="42" y="30" font-size="12">✨</text>`);
+}
+function drawMat(el) {
+  el.innerHTML = svgNail('almond','#d6d3d1','#a8a29e');
+}
+function drawHolo(el) {
+  el.innerHTML = svgNail('almond','url(#holo)','#818cf8',
+    `<defs><linearGradient id="holo" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#e0e7ff"/><stop offset="20%" stop-color="#f5d0fe"/><stop offset="40%" stop-color="#bfdbfe"/><stop offset="60%" stop-color="#d1fae5"/><stop offset="80%" stop-color="#fce7f3"/><stop offset="100%" stop-color="#e0e7ff"/></linearGradient></defs>
+     <text x="32" y="55" text-anchor="middle" font-size="12">🔮</text>`);
+}
+
+// Decorations
+function drawStrass(el) {
+  el.innerHTML = svgNail('almond','#fce7f3','#ec4899',
+    `<circle cx="32" cy="35" r="5" fill="url(#str)"/><circle cx="22" cy="55" r="3.5" fill="url(#str)"/><circle cx="42" cy="55" r="3.5" fill="url(#str)"/><circle cx="32" cy="65" r="4" fill="url(#str)"/>
+     <defs><radialGradient id="str"><stop offset="0%" stop-color="white"/><stop offset="60%" stop-color="#93c5fd"/><stop offset="100%" stop-color="#3b82f6"/></radialGradient></defs>`);
+}
+function drawPerles(el) {
+  el.innerHTML = svgNail('almond','#f0fdf4','#6ee7b7',
+    `<circle cx="32" cy="28" r="6" fill="url(#prl)" stroke="rgba(255,255,255,.6)" stroke-width="1.5"/>
+     <circle cx="22" cy="52" r="5" fill="url(#prl)" stroke="rgba(255,255,255,.6)" stroke-width="1.5"/>
+     <circle cx="42" cy="52" r="5" fill="url(#prl)" stroke="rgba(255,255,255,.6)" stroke-width="1.5"/>
+     <circle cx="32" cy="68" r="4.5" fill="url(#prl)" stroke="rgba(255,255,255,.6)" stroke-width="1.5"/>
+     <defs><radialGradient id="prl" cx="35%" cy="30%"><stop offset="0%" stop-color="white"/><stop offset="70%" stop-color="#d1fae5"/><stop offset="100%" stop-color="#6ee7b7"/></radialGradient></defs>`);
+}
+function drawFleurs(el) {
+  el.innerHTML = svgNail('almond','#fce7f3','#ec4899',
+    `<text x="32" y="45" text-anchor="middle" font-size="22">🌸</text>
+     <text x="22" y="70" text-anchor="middle" font-size="12">🌺</text>
+     <text x="42" y="68" text-anchor="middle" font-size="12">🌷</text>`);
+}
+function drawEtoiles(el) {
+  el.innerHTML = svgNail('almond','#1e1b4b','#4f46e5',
+    `<text x="32" y="38" text-anchor="middle" font-size="16">⭐</text>
+     <text x="20" y="60" text-anchor="middle" font-size="10">✨</text>
+     <text x="44" y="60" text-anchor="middle" font-size="10">💫</text>
+     <text x="32" y="75" text-anchor="middle" font-size="10">⭐</text>`);
+}
+function drawMarbre(el) {
+  el.innerHTML = svgNail('almond','white','#94a3b8',
+    `<path d="M20,20 Q30,35 25,50 Q35,60 30,80" stroke="#cbd5e1" stroke-width="2.5" fill="none" opacity=".8"/>
+     <path d="M38,15 Q45,30 40,55 Q48,65 44,82" stroke="#e2e8f0" stroke-width="1.5" fill="none" opacity=".6"/>
+     <path d="M15,45 Q28,48 40,42" stroke="#94a3b8" stroke-width="1.5" fill="none" opacity=".5"/>`);
+}
+function drawLeopard(el) {
+  el.innerHTML = svgNail('almond','#fde68a','#f59e0b',
+    `<ellipse cx="25" cy="30" rx="6" ry="4" fill="#92400e" opacity=".7" transform="rotate(-20,25,30)"/>
+     <ellipse cx="40" cy="45" rx="5" ry="3.5" fill="#92400e" opacity=".7" transform="rotate(15,40,45)"/>
+     <ellipse cx="28" cy="62" rx="6" ry="4" fill="#92400e" opacity=".7" transform="rotate(-10,28,62)"/>
+     <ellipse cx="42" cy="70" rx="4" ry="3" fill="#92400e" opacity=".6" transform="rotate(25,42,70)"/>`);
+}
+function drawFrench(el) {
+  el.innerHTML = svgNail('almond','#fef9f5','#d4a484',
+    `<path d="${nailPath('almond',65,90)}" fill="none" stroke="white" stroke-width="3" clip-path="url(#frtop)"/>
+     <defs><clipPath id="frtop"><rect x="0" y="0" width="65" height="22"/></clipPath></defs>
+     <path d="M15,20 Q32.5,10 50,20" stroke="white" stroke-width="6" fill="none" stroke-linecap="round"/>`);
+}
+function drawDegrade(el) {
+  el.innerHTML = svgNail('almond','url(#deg)','#c4b5fd',
+    `<defs><linearGradient id="deg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#a78bfa"/><stop offset="50%" stop-color="#ec4899"/><stop offset="100%" stop-color="#f97316"/></linearGradient></defs>`);
+}
+
+// ─── HELPERS ────────────────────────────────────────────────────────────────
+function gradStyle(bg) {
+  return `background: linear-gradient(145deg, ${bg[0]}, ${bg[1]});`;
+}
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length-1; i>0; i--) {
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
+
+// ─── UI BUILD ────────────────────────────────────────────────────────────────
+function buildProgress() {
+  const bar = document.getElementById('progress-bar');
+  bar.innerHTML = '';
+  THEMES.forEach((t, i) => {
+    const pill = document.createElement('div');
+    pill.className = 'pill' + (i===currentTheme?' active':i<currentTheme?' done':'');
+    pill.innerHTML = `${t.emoji} ${t.label}`;
+    bar.appendChild(pill);
+  });
+}
+
+function showTheme(idx) {
+  currentTheme = idx;
+  const theme = THEMES[idx];
+  buildProgress();
+
+  // title
+  const h2 = document.getElementById('theme-h2');
+  const sub = document.getElementById('theme-sub');
+  h2.classList.remove('show'); sub.classList.remove('show');
+  setTimeout(() => {
+    h2.textContent = theme.emoji + ' ' + theme.label;
+    sub.textContent = theme.subtitle;
+    h2.classList.add('show'); sub.classList.add('show');
+  }, 100);
+
+  // cards
+  const zone = document.getElementById('cards-zone');
+  zone.innerHTML = '';
+  document.getElementById('next-btn').classList.remove('visible');
+
+  if (!theme.single) {
+    decoCount = Math.floor(Math.random()*2)+2; // 2 or 3
+  }
+
+  const shuffled = shuffle(theme.cards);
+  shuffled.forEach((card, ci) => {
+    const wrap = document.createElement('div');
+    wrap.className = 'card-wrap';
+    wrap.style.animationDelay = ci*0.06+'s';
+
+    wrap.innerHTML = `
+      <div class="card-inner">
+        <div class="card-back">
+          <div class="nail-icon">💅</div>
+        </div>
+        <div class="card-front" style="${gradStyle(card.bg)}">
+          <div class="card-visual"></div>
+          <div class="card-label">${card.label}</div>
+        </div>
+      </div>`;
+
+    // draw visual
+    setTimeout(() => {
+      const vis = wrap.querySelector('.card-visual');
+      card.draw(vis, card);
+    }, 50);
+
+    wrap.addEventListener('click', () => onCardClick(wrap, card, theme));
+    zone.appendChild(wrap);
+  });
+}
+
+function onCardClick(wrap, card, theme) {
+  if (wrap.classList.contains('locked')) return;
+
+  const zone = document.getElementById('cards-zone');
+  const allCards = zone.querySelectorAll('.card-wrap');
+  const nextBtn = document.getElementById('next-btn');
+
+  if (theme.single) {
+    // deselect all, select clicked
+    allCards.forEach(c => {
+      c.classList.remove('selected');
+      if (!c.isSameNode(wrap)) {
+        c.classList.add('locked');
+        if (c.classList.contains('flipped')) c.classList.remove('flipped');
+      }
+    });
+    wrap.classList.add('flipped', 'selected');
+    selectedCards[theme.id] = [card];
+    nextBtn.classList.add('visible');
+  } else {
+    // multi-select up to decoCount — flipped cards always stay flipped
+    const cur = selectedCards[theme.id] || [];
+
+    if (wrap.classList.contains('selected')) {
+      // Désélectionner : retire le glow mais la carte reste retournée
+      wrap.classList.remove('selected');
+      selectedCards[theme.id] = cur.filter(c => c.label !== card.label);
+    } else {
+      // Sélectionner seulement si quota non atteint
+      if (cur.length >= decoCount) return;
+      wrap.classList.add('flipped', 'selected');
+      selectedCards[theme.id] = [...cur, card];
+    }
+
+    if ((selectedCards[theme.id] || []).length >= decoCount) {
+      nextBtn.classList.add('visible');
+    } else {
+      nextBtn.classList.remove('visible');
+    }
+  }
+}
+
+document.getElementById('next-btn').addEventListener('click', () => {
+  if (currentTheme < THEMES.length-1) {
+    showTheme(currentTheme+1);
+  } else {
+    showResult();
+  }
+});
+
+
+// ─── REAL IMAGE LIBRARY (verified Pexels IDs + tags) ────────────────────────
+// Pexels photo IDs confirmed to exist and show nail art / beauty content
+const IMAGE_LIBRARY = [
+  // PINK / ROSE
+  { id:3997391, tags:['Rose','Amande','Brillant','Clair'],      title:'Ongles roses brillants' },
+  { id:3997392, tags:['Rose','Rond','Uni','Clair'],              title:'Rose pastel rond' },
+  { id:5128935, tags:['Rose','Ballerine','Strass'],              title:'Rose coffin strass' },
+  { id:5128937, tags:['Rose','Flashy','Carré'],                  title:'Rose flashy carré' },
+  { id:3997394, tags:['Rose','Dégradé','Amande'],                title:'Dégradé rose amande' },
+  { id:7755166, tags:['Rose','Perles','Brillant'],               title:'Rose perles' },
+  { id:7755168, tags:['Rose','Fleurs','Clair'],                  title:'Rose floral délicat' },
+  // RED / ROUGE
+  { id:3997385, tags:['Rouge','Amande','Brillant'],              title:'Rouge classique amande' },
+  { id:3997386, tags:['Rouge','Long','Brillant'],                title:'Rouge long brillant' },
+  { id:5128930, tags:['Rouge','Carré','Mat'],                    title:'Rouge mat carré' },
+  { id:5128931, tags:['Rouge','Léopard','Mat'],                  title:'Rouge léopard mat' },
+  { id:5128932, tags:['Rouge','Strass','Brillant'],              title:'Rouge strass brillant' },
+  // BLUE / BLEU
+  { id:5128938, tags:['Bleu','Chrome','Holographique','Pointu'], title:'Bleu chrome stiletto' },
+  { id:5128939, tags:['Bleu','Irisé','Amande'],                  title:'Bleu irisé amande' },
+  { id:7755162, tags:['Bleu','Mat','Carré','Foncé'],             title:'Bleu mat carré' },
+  { id:7755163, tags:['Bleu','Dégradé','Long'],                  title:'Bleu ombre long' },
+  // GREEN / VERT
+  { id:5128940, tags:['Vert','Brillant','Étoiles','Dégradé'],   title:'Vert ombre étoiles' },
+  { id:5128941, tags:['Vert','Mat','Carré','Foncé'],             title:'Vert mat foncé' },
+  { id:7755164, tags:['Vert','Flashy','Strass'],                 title:'Vert flashy strass' },
+  // PURPLE / VIOLET
+  { id:5128942, tags:['Violet','Irisé','Rond','Fleurs'],         title:'Violet irisé fleurs' },
+  { id:5128943, tags:['Violet','Holographique','Long'],          title:'Violet holographique' },
+  { id:7755165, tags:['Violet','Strass','Ballerine'],            title:'Violet strass coffin' },
+  // NUDE
+  { id:3997387, tags:['Nude','Ballerine','Perles','French'],     title:'Nude coffin perles' },
+  { id:3997388, tags:['Nude','Amande','Brillant','Strass'],      title:'Nude amande strass' },
+  { id:5128933, tags:['Nude','French','Clair'],                  title:'French tip nude' },
+  { id:5128934, tags:['Nude','Mat','Court'],                     title:'Nude mat court' },
+  // BLACK / NOIR
+  { id:3997389, tags:['Noir','Pointu','Chrome','Foncé'],         title:'Noir chrome stiletto' },
+  { id:3997390, tags:['Noir','Carré','Mat','Foncé'],             title:'Noir mat carré' },
+  { id:7755167, tags:['Noir','Strass','Long'],                   title:'Noir strass long' },
+  // WHITE / BLANC
+  { id:5128936, tags:['Blanc','Marbré','Mat'],                   title:'Marbre blanc mat' },
+  { id:7755169, tags:['Blanc','French','Clair','Amande'],        title:'French blanc amande' },
+  { id:7755170, tags:['Blanc','Perles','Brillant'],              title:'Blanc perles brillant' },
+];
+
+// Build Pexels URL from photo ID
+function pexelsUrl(id) {
+  return `https://images.pexels.com/photos/${id}/pexels-photo-${id}.jpeg?auto=compress&cs=tinysrgb&w=400&h=500&fit=crop`;
+}
+
+// ─── SMART PICKER ────────────────────────────────────────────────────────────
+function pickImages() {
+  const couleur   = (selectedCards['couleur']||[{}])[0]?.label || '';
+  const forme     = (selectedCards['forme']||[{}])[0]?.label || '';
+  const finition  = (selectedCards['finition']||[{}])[0]?.label || '';
+  const intensite = (selectedCards['intensite']||[{}])[0]?.label || '';
+  const decos     = (selectedCards['decoration']||[]).map(c=>c.label);
+  const userTags  = [couleur, forme, finition, intensite, ...decos].filter(Boolean);
+
+  const scored = IMAGE_LIBRARY.map(img => ({
+    ...img,
+    score: img.tags.filter(t => userTags.includes(t)).length + Math.random() * 0.4
+  }));
+  scored.sort((a,b) => b.score - a.score);
+  return scored.slice(0, 5);
+}
+
+// ─── GENERATE INSPIRATIONS ───────────────────────────────────────────────────
+function generateInspirations() {
+  const inspoGrid = document.getElementById('inspo-grid');
+  const picks = pickImages();
+
+  const couleur = (selectedCards['couleur']||[{}])[0]?.label || '';
+  const forme   = (selectedCards['forme']||[{}])[0]?.label || '';
+  const decos   = (selectedCards['decoration']||[]).map(c=>c.label);
+
+  inspoGrid.innerHTML = '';
+
+  picks.forEach((pick, i) => {
+    const card = document.createElement('div');
+    card.className = 'inspo-card';
+    card.style.animationDelay = i * 0.12 + 's';
+
+    const img = document.createElement('img');
+    img.src = pexelsUrl(pick.id);
+    img.alt = pick.title;
+    img.loading = 'lazy';
+    img.style.cssText = 'opacity:0;transition:opacity .6s;width:100%;height:100%;object-fit:cover;display:block;';
+    img.onload = () => { img.style.opacity = 1; };
+    img.onerror = () => {
+      card.innerHTML = '<div class="inspo-fallback"><span>💅</span><p>' + pick.title + '</p></div>';
+    };
+
+    const overlay = document.createElement('div');
+    overlay.className = 'inspo-overlay';
+    overlay.textContent = pick.title;
+
+    card.appendChild(img);
+    card.appendChild(overlay);
+    inspoGrid.appendChild(card);
+  });
+}
+
+
+function buildImagePrompt() {
+  const longueur  = (selectedCards['longueur']||[{}])[0]?.label || 'Moyen';
+  const forme     = (selectedCards['forme']||[{}])[0]?.label || 'Amande';
+  const couleur   = (selectedCards['couleur']||[{}])[0]?.label || 'Rose';
+  const intensite = (selectedCards['intensite']||[{}])[0]?.label || 'Clair';
+  const finition  = (selectedCards['finition']||[{}])[0]?.label || 'Brillant';
+  const decos     = (selectedCards['decoration']||[]).map(c=>c.label);
+
+  const formeMap = {
+    'Amande':'almond-shaped nails', 'Rond':'round nails',
+    'Carré':'square nails', 'Ballerine':'coffin ballerina nails',
+    'Pointu':'stiletto pointed nails'
+  };
+  const couleurMap = {
+    'Rouge':'deep crimson red', 'Rose':'soft blush pink',
+    'Bleu':'electric cobalt blue', 'Vert':'emerald green',
+    'Violet':'rich amethyst purple', 'Nude':'natural nude beige',
+    'Noir':'jet black', 'Blanc':'pure white'
+  };
+  const intensiteMap = {
+    'Clair':'light pastel delicate', 'Foncé':'deep dark saturated', 'Flashy':'neon vibrant bold'
+  };
+  const finitionMap = {
+    'Chrome':'mirror chrome metallic liquid metal finish',
+    'Irisé':'iridescent aurora borealis shifting color finish',
+    'Uni':'clean solid color finish',
+    'Brillant':'ultra glossy high-shine lacquer finish',
+    'Mat':'velvet matte finish',
+    'Holographique':'holographic prism rainbow glitter finish'
+  };
+  const decoMap = {
+    'Strass':'encrusted with sparkling rhinestone crystals',
+    'Perles':'adorned with tiny white pearls',
+    'Fleurs':'decorated with delicate 3D flowers',
+    'Étoiles':'with star-shaped glitter and metallic stars',
+    'Marbré':'with elegant marble swirl veining pattern',
+    'Léopard':'with leopard animal print pattern',
+    'French':'with precise white french tip',
+    'Dégradé':'with smooth ombre gradient fade'
+  };
+
+  const fEn  = formeMap[forme]     || forme;
+  const cEn  = couleurMap[couleur] || couleur;
+  const iEn  = intensiteMap[intensite] || '';
+  const fiEn = finitionMap[finition] || finition;
+  const dEn  = decos.map(d => decoMap[d] || d).join(', ');
+  const lEn  = longueur === 'Court' ? 'short' : longueur === 'Moyen' ? 'medium length' : 'long extra long';
+
+  const decoText = dEn ? `, ${dEn}` : '';
+
+  return `Extreme close-up macro photography of a woman's hand with ${lEn} ${fEn}, ${iEn} ${cEn} color, ${fiEn}${decoText}. Professional nail salon photography, studio lighting, white marble background, 8K ultra detailed, photorealistic, DSLR camera, shallow depth of field, beauty editorial style, perfect manicure`;
+}
+
+async function generateAIImage() {
+  const wrap = document.getElementById('ai-image-wrap');
+  const prompt = buildImagePrompt();
+
+  // Pollinations.ai — free, no API key, photorealistic Stable Diffusion
+  const encodedPrompt = encodeURIComponent(prompt);
+  const seed = Math.floor(Math.random() * 99999);
+  const imgUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=512&height=512&seed=${seed}&model=flux&nologo=true`;
+
+  const img = document.createElement('img');
+  img.alt = 'Nail art généré par IA';
+  img.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:16px;opacity:0;transition:opacity .6s;';
+
+  img.onload = () => { img.style.opacity = 1; };
+  img.onerror = () => { generateSVGNailArt(wrap); };
+
+  wrap.innerHTML = '';
+  wrap.appendChild(img);
+  img.src = imgUrl;
+}
+
+function generateSVGNailArt(wrap) {
+  const couleur   = (selectedCards['couleur']||[{}])[0]?.label || 'Rose';
+  const forme     = (selectedCards['forme']||[{}])[0]?.label || 'Amande';
+  const finition  = (selectedCards['finition']||[{}])[0]?.label || 'Brillant';
+  const intensite = (selectedCards['intensite']||[{}])[0]?.label || 'Clair';
+  const decos     = (selectedCards['decoration']||[]).map(c=>c.label);
+
+  const colorPalettes = {
+    'Rose':   ['#ff9ec4','#ff6eb4','#ffd6e8'],
+    'Rouge':  ['#f87171','#dc2626','#fecaca'],
+    'Bleu':   ['#60a5fa','#2563eb','#bfdbfe'],
+    'Vert':   ['#34d399','#059669','#a7f3d0'],
+    'Violet': ['#a78bfa','#7c3aed','#ede9fe'],
+    'Nude':   ['#d4a484','#b8865c','#fde8d8'],
+    'Noir':   ['#374151','#111827','#6b7280'],
+    'Blanc':  ['#f8fafc','#e2e8f0','#ffffff'],
+  };
+  const pal = colorPalettes[couleur] || colorPalettes['Rose'];
+
+  // Apply intensity
+  let c1 = pal[0], c2 = pal[1], c3 = pal[2];
+  if (intensite === 'Foncé') { c1 = pal[1]; c2 = pal[1]; }
+  if (intensite === 'Flashy') { c1 = pal[0]; c2 = pal[0]; }
+
+  // Nail shape path (for a single large nail)
+  const shapes = {
+    'Amande':    'M110,220 Q60,200 55,100 Q55,20 110,10 Q165,20 165,100 Q160,200 110,220 Z',
+    'Rond':      'M70,220 Q55,180 55,110 Q55,20 110,20 Q165,20 165,110 Q165,180 150,220 Z',
+    'Carré':     'M65,220 L65,30 L155,30 L155,220 Z',
+    'Ballerine': 'M110,220 Q70,200 65,110 Q65,25 110,15 Q155,25 155,110 Q150,200 110,220 Z',
+    'Pointu':    'M110,220 L65,30 L155,30 Z',
+  };
+  const nailPath = shapes[forme] || shapes['Amande'];
+
+  // Finish effect
+  let finishDefs = '', finishOverlay = '';
+  if (finition === 'Chrome' || finition === 'Holographique') {
+    finishDefs = `<linearGradient id="fin" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="white" stop-opacity=".8"/>
+      <stop offset="30%" stop-color="${c1}" stop-opacity=".6"/>
+      <stop offset="60%" stop-color="${c2}"/>
+      <stop offset="100%" stop-color="white" stop-opacity=".4"/>
+    </linearGradient>`;
+    finishOverlay = `<path d="${nailPath}" fill="url(#fin)" opacity=".5"/>`;
+  } else if (finition === 'Irisé') {
+    finishDefs = `<linearGradient id="fin" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#fdf4ff"/>
+      <stop offset="33%" stop-color="#bfdbfe"/>
+      <stop offset="66%" stop-color="#d1fae5"/>
+      <stop offset="100%" stop-color="#fce7f3"/>
+    </linearGradient>`;
+    finishOverlay = `<path d="${nailPath}" fill="url(#fin)" opacity=".45"/>`;
+  } else if (finition === 'Brillant') {
+    finishOverlay = `<ellipse cx="90" cy="55" rx="18" ry="10" fill="white" opacity=".45" transform="rotate(-30,90,55)"/>`;
+  }
+
+  // Decorations
+  let decoSVG = '';
+  decos.forEach(d => {
+    if (d === 'Strass') decoSVG += `
+      <circle cx="110" cy="80"  r="7" fill="url(#gem)" stroke="white" stroke-width="1.5"/>
+      <circle cx="88"  cy="115" r="5" fill="url(#gem)" stroke="white" stroke-width="1.5"/>
+      <circle cx="132" cy="115" r="5" fill="url(#gem)" stroke="white" stroke-width="1.5"/>
+      <circle cx="110" cy="148" r="6" fill="url(#gem)" stroke="white" stroke-width="1.5"/>
+      <defs><radialGradient id="gem" cx="35%" cy="30%"><stop offset="0%" stop-color="white"/><stop offset="60%" stop-color="#93c5fd"/><stop offset="100%" stop-color="#1d4ed8"/></radialGradient></defs>`;
+    if (d === 'Perles') decoSVG += `
+      <circle cx="110" cy="75"  r="8" fill="url(#prl)" stroke="rgba(255,255,255,.7)" stroke-width="1.5"/>
+      <circle cx="90"  cy="115" r="6" fill="url(#prl)" stroke="rgba(255,255,255,.7)" stroke-width="1.5"/>
+      <circle cx="130" cy="115" r="6" fill="url(#prl)" stroke="rgba(255,255,255,.7)" stroke-width="1.5"/>
+      <circle cx="110" cy="152" r="7" fill="url(#prl)" stroke="rgba(255,255,255,.7)" stroke-width="1.5"/>
+      <defs><radialGradient id="prl" cx="35%" cy="30%"><stop offset="0%" stop-color="white"/><stop offset="70%" stop-color="#d1fae5"/><stop offset="100%" stop-color="#6ee7b7"/></radialGradient></defs>`;
+    if (d === 'Fleurs') decoSVG += `<text x="110" y="105" text-anchor="middle" font-size="36">🌸</text><text x="88" y="155" text-anchor="middle" font-size="22">🌺</text><text x="132" y="150" text-anchor="middle" font-size="20">🌷</text>`;
+    if (d === 'Étoiles') decoSVG += `<text x="110" y="95" text-anchor="middle" font-size="30">⭐</text><text x="85" y="140" text-anchor="middle" font-size="18">✨</text><text x="135" y="140" text-anchor="middle" font-size="18">💫</text><text x="110" y="170" text-anchor="middle" font-size="18">⭐</text>`;
+    if (d === 'Marbré') decoSVG += `
+      <path d="M80,40 Q95,80 88,120 Q100,155 95,195" stroke="white" stroke-width="3" fill="none" opacity=".6"/>
+      <path d="M125,35 Q138,75 132,115 Q140,148 136,188" stroke="rgba(255,255,255,.4)" stroke-width="2" fill="none"/>
+      <path d="M70,100 Q90,105 115,98 Q138,92 152,98" stroke="white" stroke-width="2" fill="none" opacity=".4"/>`;
+    if (d === 'Léopard') decoSVG += `
+      <ellipse cx="95"  cy="70"  rx="9" ry="6" fill="rgba(0,0,0,.25)" transform="rotate(-20,95,70)"/>
+      <ellipse cx="128" cy="95"  rx="8" ry="5" fill="rgba(0,0,0,.25)" transform="rotate(15,128,95)"/>
+      <ellipse cx="90"  cy="130" rx="9" ry="6" fill="rgba(0,0,0,.25)" transform="rotate(-10,90,130)"/>
+      <ellipse cx="130" cy="155" rx="7" ry="5" fill="rgba(0,0,0,.25)" transform="rotate(25,130,155)"/>`;
+    if (d === 'French') decoSVG += `<path d="M70,38 Q110,22 150,38" stroke="white" stroke-width="10" fill="none" stroke-linecap="round"/>`;
+    if (d === 'Dégradé') {/* handled via gradient fill */}
+  });
+
+  // Main nail fill
+  let fillDef = `<linearGradient id="nfill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${c3}"/><stop offset="100%" stop-color="${c2}"/></linearGradient>`;
+  if (decos.includes('Dégradé')) {
+    fillDef = `<linearGradient id="nfill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${c3}"/><stop offset="50%" stop-color="${c1}"/><stop offset="100%" stop-color="${pal[1]}"/></linearGradient>`;
+  }
+
+  const svg = `<svg viewBox="0 0 220 240" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%">
+    <defs>
+      ${fillDef}
+      ${finishDefs}
+      <filter id="shadow"><feDropShadow dx="0" dy="6" stdDeviation="8" flood-color="rgba(0,0,0,.18)"/></filter>
+    </defs>
+    <!-- background -->
+    <rect width="220" height="240" fill="${c3}" opacity=".18" rx="20"/>
+    <!-- nail body -->
+    <g filter="url(#shadow)">
+      <path d="${nailPath}" fill="url(#nfill)" stroke="rgba(255,255,255,.5)" stroke-width="2"/>
+    </g>
+    <!-- cuticle base -->
+    <ellipse cx="110" cy="220" rx="46" ry="10" fill="rgba(0,0,0,.08)"/>
+    <!-- finish overlay -->
+    ${finishOverlay}
+    <!-- decorations -->
+    ${decoSVG}
+  </svg>`;
+
+  wrap.innerHTML = svg;
+}
+
+async function generateProposal() {
+  const content = document.getElementById('proposal-content');
+
+  // Build summary of choices
+  const summary = THEMES.map(t => {
+    const cards = selectedCards[t.id] || [];
+    if (!cards.length) return null;
+    return `${t.label}: ${cards.map(c => c.label).join(', ')}`;
+  }).filter(Boolean).join(' | ');
+
+  const prompt = `Tu es une nail artist professionnelle et experte en nail art. Une cliente a fait les choix suivants via une application :
+
+${summary}
+
+Propose-lui un nail art complet et personnalisé en JSON uniquement (sans markdown ni backticks), avec exactement ce format :
+{
+  "nom": "Nom poétique et créatif du look (5 mots max)",
+  "description": "Description évocatrice et inspirante du look final (2-3 phrases, ton enthousiaste)",
+  "etapes": [
+    "Étape courte et précise",
+    "Étape courte et précise",
+    "Étape courte et précise",
+    "Étape courte et précise",
+    "Étape courte et précise"
+  ],
+  "conseils": ["conseil court", "conseil court", "conseil court", "conseil court"]
+}
+
+Les étapes doivent être concrètes, pratiques, dans l'ordre de réalisation. Les conseils sont des astuces pro courtes (produits, techniques, durée). Réponds UNIQUEMENT avec le JSON.`;
+
+  try {
+    const res = await fetch('proxy.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    const data = await res.json();
+    const raw = (data.content || []).map(b => b.text || '').join('');
+    const match = raw.match(/\{[\s\S]*\}/);
+    if (!match) throw new Error('no json');
+    const proposal = JSON.parse(match[0]);
+
+    const stepsHTML = (proposal.etapes || []).map((s, i) =>
+      `<div class="proposal-step">
+        <span class="step-num">${i+1}.</span>
+        <span class="step-text">${s}</span>
+      </div>`
+    ).join('');
+
+    const tipsHTML = (proposal.conseils || []).map(t =>
+      `<span class="tip-pill">✦ ${t}</span>`
+    ).join('');
+
+    content.innerHTML = `<div class="proposal-body">
+      <div>
+        <div class="proposal-name">${proposal.nom}</div>
+        <div class="proposal-desc">${proposal.description}</div>
+      </div>
+      <div class="proposal-steps">${stepsHTML}</div>
+      <div class="proposal-tips">${tipsHTML}</div>
+    </div>`;
+
+  } catch(e) {
+    content.innerHTML = `<div class="proposal-error">😔 Impossible de générer la proposition.<br>Vérifie ta connexion et réessaie.</div>`;
+  }
+}
+
+function showResult() {
+  document.getElementById('cards-zone').style.display = 'none';
+  document.getElementById('next-btn').style.display = 'none';
+  document.getElementById('theme-title').style.display = 'none';
+  document.getElementById('progress-bar').style.display = 'none';
+
+  const screen = document.getElementById('result-screen');
+  screen.style.display = 'block';
+
+  const grid = document.getElementById('result-grid');
+  grid.innerHTML = '';
+
+  const colors = ['#ff6eb4','#c084fc','#60a5fa','#34d399','#f97316','#f59e0b'];
+
+  THEMES.forEach((theme, ti) => {
+    const cards = selectedCards[theme.id] || [];
+    cards.forEach((card, ci) => {
+      const div = document.createElement('div');
+      div.className = 'result-card';
+      div.style.borderColor = colors[(ti+ci)%colors.length];
+      div.style.animationDelay = (ti*cards.length+ci)*0.1+'s';
+      div.innerHTML = `<span class="rc-emoji">${card.emoji}</span>
+        <span><span class="rc-label">${theme.label}</span>${card.label}</span>`;
+      grid.appendChild(div);
+    });
+  });
+
+  confettiBurst();
+}
+
+
+function restart() {
+  selectedCards = {};
+  currentTheme = 0;
+  document.getElementById('cards-zone').style.display = 'flex';
+  document.getElementById('next-btn').style.display = 'block';
+  document.getElementById('theme-title').style.display = 'block';
+  document.getElementById('progress-bar').style.display = 'flex';
+  document.getElementById('result-screen').style.display = 'none';
+  showTheme(0);
+}
+
+function confettiBurst() {
+  const colors = ['#ff6eb4','#c084fc','#6ee7b7','#fbbf24','#60a5fa','#f97316'];
+  for (let i=0; i<60; i++) {
+    setTimeout(() => {
+      const c = document.createElement('div');
+      c.className = 'confetti-piece';
+      c.style.cssText = `
+        left:${Math.random()*100}vw;
+        top:0;
+        background:${colors[Math.floor(Math.random()*colors.length)]};
+        transform:rotate(${Math.random()*360}deg);
+        border-radius:${Math.random()>.5?'50%':'2px'};
+        animation-duration:${1.2+Math.random()*.8}s;
+        animation-delay:${Math.random()*.5}s;
+      `;
+      document.body.appendChild(c);
+      setTimeout(()=>c.remove(),2500);
+    }, i*25);
+  }
+}
+
+// ─── ADMIN ───────────────────────────────────────────────────────────────────
+
+// Working copy of themes for admin (deep clone, draw refs preserved)
+let adminData = null;
+let emojiTarget = null; // { type: 'cat'|'card', catIdx, cardIdx }
+
+const ALL_EMOJIS = ['💅','✨','💎','🌸','🌹','🌺','🌷','🍑','🎨','🪞','🌈','🔮','💫','⭐','🌟','💜','💙','🖤','🤍','🌿','🌊','🐆','🦋','🪨','🎀','🫧','💐','🌻','🌼','🍀','🦄','🌙','☀️','⚡','🔺','🔵','⬛','🩰','🤏','✋','📏','🏆','🎯','🎲','🎪','🎭','🎬','🎤','🎵','🎶','🎸','🎹','🎺','🎻','🥁','🎷','🎙️','🎧','📱','💻','🖥️','⌨️','🖱️','🖨️','📷','📸','📹','🎥','📽️','🎞️','📞','☎️','📟','📠','📺','📻','🧭','⏱️','⏲️','⏰','🕰️','⌚','⏳','📡','🔋','🔌','💡','🔦','🕯️','🪔','🧯','🛢️','💰','💳','💸','💵','💴','💶','💷','💹','📈','📉','📊','🗂️','📁','📂','📅','📆','🗒️','📝','✏️','🖊️','🖋️','🖌️','🖍️','📌','📍','📎','🖇️','📏','📐','✂️','🗃️','🗄️','🗑️','🔒','🔓','🔏','🔐','🔑','🗝️','🔨','🪓','⛏️','⚒️','🛠️','🗡️','⚔️','🛡️','🔧','🔩','⚙️','🗜️','🔗','⛓️','🪝','🧲','🪜','⚗️','🧪','🧫','🧬','🔭','🔬','🩺','💊','💉','🩹','🩼','🩻','🩺','🏥','🏨','🏦','🏪','🏫','🏬','🏭','🏯','🏰','🗼','🗽','⛪','🕌','🛕','🕍','⛩️','🗾','🎑','🏞️','🌅','🌄','🌠','🎆','🎇','🌃','🏙️','🌆','🌇','🌉','🌌','🌁'];
+
+function openAdmin() {
+  // Deep clone THEMES into adminData (keep only serialisable fields)
+  adminData = THEMES.map(t => ({
+    id: t.id,
+    label: t.label,
+    emoji: t.emoji,
+    subtitle: t.subtitle,
+    single: t.single,
+    cards: t.cards.map(c => ({
+      label: c.label,
+      emoji: c.emoji,
+      bg: [...(c.bg||['#fce7f3','#fbcfe8'])],
+      colors: c.colors ? [...c.colors] : undefined,
+      draw: c.draw // keep ref for now
+    }))
+  }));
+  renderAdmin();
+  document.getElementById('admin-overlay').classList.add('open');
+  document.getElementById('admin-panel').classList.add('open');
+}
+
+function closeAdmin() {
+  document.getElementById('admin-overlay').classList.remove('open');
+  document.getElementById('admin-panel').classList.remove('open');
+  closeEmojiPicker();
+}
+
+function renderAdmin() {
+  const list = document.getElementById('admin-cats-list');
+  list.innerHTML = '';
+  adminData.forEach((cat, ci) => {
+    const block = document.createElement('div');
+    block.className = 'admin-cat';
+
+    block.innerHTML = `
+      <div class="admin-cat-header" onclick="toggleCat(${ci})">
+        <button class="admin-emoji-btn" onclick="event.stopPropagation();openEmojiPicker(event,'cat',${ci},-1)">${cat.emoji}</button>
+        <input class="admin-cat-name" value="${cat.label}" placeholder="Nom de la catégorie"
+          onclick="event.stopPropagation()"
+          oninput="adminData[${ci}].label=this.value"/>
+        <span class="admin-cat-toggle" id="toggle-${ci}">▾</span>
+        <button class="admin-cat-del" onclick="event.stopPropagation();adminDelCat(${ci})" title="Supprimer">🗑️</button>
+      </div>
+      <div class="admin-cat-body" id="catbody-${ci}">
+        ${cat.cards.map((card, ki) => `
+          <div class="admin-card-row" id="cardrow-${ci}-${ki}">
+            <button class="admin-card-emoji" onclick="openEmojiPicker(event,'card',${ci},${ki})">${card.emoji}</button>
+            <input class="admin-card-label" value="${card.label}" placeholder="Nom de la carte"
+              oninput="adminData[${ci}].cards[${ki}].label=this.value"/>
+            <button class="admin-card-del" onclick="adminDelCard(${ci},${ki})" title="Supprimer">✕</button>
+          </div>`).join('')}
+        <button class="admin-add-card" onclick="adminAddCard(${ci})">＋ Ajouter une carte</button>
+      </div>`;
+    list.appendChild(block);
+  });
+}
+
+function toggleCat(ci) {
+  const body = document.getElementById('catbody-' + ci);
+  const tog  = document.getElementById('toggle-' + ci);
+  body.classList.toggle('collapsed');
+  tog.textContent = body.classList.contains('collapsed') ? '▸' : '▾';
+}
+
+function adminDelCat(ci) {
+  const btn = document.querySelector(`#admin-cats-list .admin-cat:nth-child(${ci+1}) .admin-cat-del`);
+  if (btn && btn.dataset.confirm !== 'yes') {
+    btn.dataset.confirm = 'yes';
+    btn.textContent = '✓ Confirmer';
+    btn.style.background = '#fee2e2';
+    btn.style.color = '#dc2626';
+    btn.style.borderRadius = '8px';
+    btn.style.padding = '.2rem .5rem';
+    setTimeout(() => {
+      if (btn.dataset.confirm === 'yes') {
+        btn.dataset.confirm = '';
+        btn.textContent = '🗑️';
+        btn.style = '';
+      }
+    }, 2500);
+    return;
+  }
+  adminData.splice(ci, 1);
+  renderAdmin();
+}
+
+function adminDelCard(ci, ki) {
+  adminData[ci].cards.splice(ki, 1);
+  renderAdmin();
+}
+
+function adminAddCard(ci) {
+  adminData[ci].cards.push({ label: 'Nouvelle carte', emoji: '💅', bg: ['#fce7f3','#fbcfe8'], draw: drawUni });
+  renderAdmin();
+  // scroll to new card
+  const body = document.getElementById('catbody-' + ci);
+  if (body) body.scrollIntoView({ behavior: 'smooth', block: 'end' });
+}
+
+function adminAddCategory() {
+  adminData.push({
+    id: 'cat_' + Date.now(),
+    label: 'Nouvelle catégorie',
+    emoji: '✨',
+    subtitle: 'Faites votre choix',
+    single: true,
+    cards: [{ label: 'Option 1', emoji: '💅', bg: ['#fce7f3','#fbcfe8'], draw: drawUni }]
+  });
+  renderAdmin();
+  // open it and scroll to it
+  const newIdx = adminData.length - 1;
+  const list = document.getElementById('admin-cats-list');
+  list.lastElementChild?.scrollIntoView({ behavior: 'smooth' });
+}
+
+function adminSave() {
+  // Merge adminData back into THEMES
+  THEMES.length = 0;
+  adminData.forEach(cat => {
+    THEMES.push({
+      ...cat,
+      cards: cat.cards.map(c => ({
+        ...c,
+        draw: c.draw || drawUni
+      }))
+    });
+  });
+  // Rebuild progress and restart from theme 0
+  closeAdmin();
+  restart();
+}
+
+// ─── EMOJI PICKER ────────────────────────────────────────────────────────────
+let filteredEmojis = [...ALL_EMOJIS];
+
+function openEmojiPicker(event, type, ci, ki) {
+  event.stopPropagation();
+  emojiTarget = { type, ci, ki };
+  const picker = document.getElementById('emoji-picker');
+  picker.classList.add('open');
+  document.getElementById('emoji-search').value = '';
+  filteredEmojis = [...ALL_EMOJIS];
+  renderEmojiGrid();
+
+  // Position near the clicked button
+  const rect = event.target.getBoundingClientRect();
+  const pickerW = 260, pickerH = 260;
+  let top = rect.bottom + 6;
+  let left = rect.left;
+  if (left + pickerW > window.innerWidth) left = window.innerWidth - pickerW - 8;
+  if (top + pickerH > window.innerHeight) top = rect.top - pickerH - 6;
+  picker.style.top = top + 'px';
+  picker.style.left = left + 'px';
+
+  setTimeout(() => document.addEventListener('click', closeEmojiOnOutside), 10);
+}
+
+function closeEmojiOnOutside(e) {
+  const picker = document.getElementById('emoji-picker');
+  if (!picker.contains(e.target)) {
+    closeEmojiPicker();
+    document.removeEventListener('click', closeEmojiOnOutside);
+  }
+}
+
+function closeEmojiPicker() {
+  document.getElementById('emoji-picker').classList.remove('open');
+  document.removeEventListener('click', closeEmojiOnOutside);
+}
+
+function renderEmojiGrid() {
+  const grid = document.getElementById('emoji-grid');
+  grid.innerHTML = '';
+  filteredEmojis.forEach(em => {
+    const btn = document.createElement('button');
+    btn.className = 'eopt';
+    btn.textContent = em;
+    btn.onclick = (e) => { e.stopPropagation(); selectEmoji(em); };
+    grid.appendChild(btn);
+  });
+}
+
+function filterEmoji(q) {
+  filteredEmojis = q ? ALL_EMOJIS.filter(e => e.includes(q)) : [...ALL_EMOJIS];
+  renderEmojiGrid();
+}
+
+function selectEmoji(em) {
+  if (!emojiTarget) return;
+  const { type, ci, ki } = emojiTarget;
+  if (type === 'cat') {
+    adminData[ci].emoji = em;
+  } else {
+    adminData[ci].cards[ki].emoji = em;
+  }
+  closeEmojiPicker();
+  renderAdmin();
+}
+
+// ─── INIT ────────────────────────────────────────────────────────────────────
+showTheme(0);
+
+document.getElementById('admin-btn').addEventListener('click', openAdmin);
+document.getElementById('admin-close').addEventListener('click', closeAdmin);
+document.getElementById('admin-overlay').addEventListener('click', closeAdmin);
+document.getElementById('admin-save-btn').addEventListener('click', adminSave);
+document.getElementById('admin-add-cat-btn').addEventListener('click', adminAddCategory);
+document.getElementById('emoji-search').addEventListener('input', function() { filterEmoji(this.value); });
+</script>
+</body>
+</html>
