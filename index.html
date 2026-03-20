@@ -252,6 +252,103 @@
 
   #admin-body { flex: 1; overflow-y: auto; padding: 1.25rem; display: flex; flex-direction: column; gap: .75rem; }
 
+  /* ── Admin tabs ── */
+  #admin-tabs {
+    display: flex; flex-shrink: 0;
+    border-bottom: 2px solid #fce7f3;
+    background: #fff8f0;
+  }
+  .admin-tab {
+    flex: 1; padding: .65rem .5rem;
+    font-family: 'Nunito', sans-serif; font-weight: 700; font-size: .82rem;
+    border: none; background: none; cursor: pointer; color: #b07090;
+    border-bottom: 2px solid transparent; margin-bottom: -2px;
+    transition: all .2s;
+  }
+  .admin-tab:hover { color: var(--pink); background: rgba(255,110,180,.05); }
+  .admin-tab.active { color: var(--pink); border-bottom-color: var(--pink); background: white; }
+
+  .admin-tab-content { display: none; flex: 1; overflow-y: auto; padding: 1.25rem; flex-direction: column; gap: .75rem; }
+  .admin-tab-content.active { display: flex; }
+
+  /* ── Conflicts ── */
+  .conflicts-intro {
+    font-size: .8rem; color: #9d7090; line-height: 1.5;
+    background: #fff0f8; border-radius: 10px; padding: .7rem .9rem;
+    border: 1px solid #fce7f3;
+  }
+  .conflicts-intro em { color: var(--pink); font-style: normal; font-weight: 700; }
+
+  .conflict-rule {
+    background: #fff8f0; border: 1.5px solid #fce7f3; border-radius: 14px;
+    padding: .75rem 1rem; display: flex; flex-direction: column; gap: .6rem;
+  }
+  .conflict-rule-header {
+    display: flex; align-items: center; justify-content: space-between; gap: .5rem;
+  }
+  .conflict-rule-label {
+    font-size: .75rem; font-weight: 800; color: var(--pink);
+    letter-spacing: .04em; text-transform: uppercase;
+  }
+  .conflict-rule-del {
+    background: none; border: none; color: #fca5a5; cursor: pointer;
+    font-size: .9rem; padding: .2rem .4rem; border-radius: 6px; transition: all .15s;
+  }
+  .conflict-rule-del:hover { color: #ef4444; background: #fee2e2; }
+
+  .conflict-if, .conflict-then {
+    display: flex; align-items: center; gap: .5rem; flex-wrap: wrap;
+  }
+  .conflict-badge {
+    font-size: .68rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase;
+    padding: .2rem .55rem; border-radius: 999px; flex-shrink: 0;
+  }
+  .conflict-badge.if-badge  { background: #fce7f3; color: #db2777; }
+  .conflict-badge.then-badge { background: #ede9fe; color: #7c3aed; }
+
+  .conflict-select {
+    flex: 1; min-width: 90px;
+    border: 1.5px solid #fce7f3; border-radius: 8px; padding: .3rem .5rem;
+    font-family: 'Nunito', sans-serif; font-size: .82rem; font-weight: 600;
+    color: var(--dark); background: white; cursor: pointer; transition: border-color .15s;
+  }
+  .conflict-select:focus { outline: none; border-color: var(--pink); }
+
+  .conflict-then-cards {
+    display: flex; flex-direction: column; gap: .4rem; padding-left: .5rem;
+    border-left: 2px solid #ede9fe;
+  }
+  .conflict-then-row {
+    display: flex; align-items: center; gap: .5rem; flex-wrap: wrap;
+  }
+  .conflict-then-del {
+    background: none; border: none; color: #c4b5fd; cursor: pointer;
+    font-size: .8rem; padding: .1rem .3rem; border-radius: 4px; transition: all .15s;
+  }
+  .conflict-then-del:hover { color: #7c3aed; background: #ede9fe; }
+
+  .conflict-add-then {
+    align-self: flex-start; background: none;
+    border: 1px dashed #c4b5fd; color: #7c3aed;
+    font-family: 'Nunito', sans-serif; font-weight: 700; font-size: .75rem;
+    padding: .2rem .65rem; border-radius: 999px; cursor: pointer; transition: all .2s;
+  }
+  .conflict-add-then:hover { background: #ede9fe; border-color: #7c3aed; }
+
+  .admin-add-conflict {
+    align-self: flex-start; background: none;
+    border: 1.5px dashed #f9a8d4; color: #ec4899;
+    font-family: 'Nunito', sans-serif; font-weight: 700; font-size: .82rem;
+    padding: .3rem .8rem; border-radius: 999px; cursor: pointer; transition: all .2s;
+    margin-top: .25rem;
+  }
+  .admin-add-conflict:hover { background: #fce7f3; border-color: var(--pink); }
+
+  /* Grisée par conflit */
+  .card-wrap.conflicted {
+    opacity: .3; filter: grayscale(.7); cursor: not-allowed; pointer-events: none;
+  }
+
   .admin-cat { background: #fff8f0; border: 2px solid #fce7f3; border-radius: 16px; overflow: hidden; }
   .admin-cat-header {
     display: flex; align-items: center; gap: .6rem; padding: .75rem 1rem;
@@ -409,9 +506,24 @@
     <span>⚙️ Administration</span>
     <button id="admin-close">✕</button>
   </div>
-  <div id="admin-body">
+  <!-- Tabs -->
+  <div id="admin-tabs">
+    <button class="admin-tab active" data-tab="categories">🗂️ Catégories</button>
+    <button class="admin-tab" data-tab="conflicts">⚠️ Conflits</button>
+  </div>
+  <!-- Tab: Catégories -->
+  <div id="admin-body" class="admin-tab-content active">
     <div id="admin-cats-list"></div>
     <button class="admin-add-cat" id="admin-add-cat-btn">＋ Nouvelle catégorie</button>
+  </div>
+  <!-- Tab: Conflits -->
+  <div id="admin-conflicts-body" class="admin-tab-content">
+    <div class="conflicts-intro">
+      Définissez les cartes à griser automatiquement selon les choix précédents.<br>
+      <em>Ex : si Longueur = Court → griser Pointu et Ballerine</em>
+    </div>
+    <div id="conflicts-list"></div>
+    <button class="admin-add-conflict" id="admin-add-conflict-btn">＋ Ajouter une règle</button>
   </div>
   <div id="admin-save-bar">
     <button id="admin-reset-btn" title="Remettre les paramètres par défaut">🔄 Défaut</button>
@@ -515,6 +627,16 @@ const THEMES = [
       { label: 'Dégradé',   emoji: '🌅', bg: ['#fdf4ff','#ede9fe'], draw: drawDegrade },
     ]
   }
+];
+
+// ─── CONFLICTS ───────────────────────────────────────────────────────────────
+// Règles : si [themeId + cardLabel] est sélectionné → griser [themeId + cardLabel]
+// Format : { ifTheme, ifCard, thenTheme, thenCard }
+let CONFLICTS = [
+  { ifTheme: 'longueur', ifCard: 'Court',  thenTheme: 'forme', thenCard: 'Pointu' },
+  { ifTheme: 'longueur', ifCard: 'Court',  thenTheme: 'forme', thenCard: 'Ballerine' },
+  { ifTheme: 'longueur', ifCard: 'Court',  thenTheme: 'forme', thenCard: 'Amande' },
+  { ifTheme: 'longueur', ifCard: 'Moyen',  thenTheme: 'forme', thenCard: 'Pointu' },
 ];
 
 // ─── STATE ──────────────────────────────────────────────────────────────────
@@ -900,10 +1022,44 @@ function showTheme(idx) {
     wrap.addEventListener('click', () => onCardClick(wrap, card, theme));
     zone.appendChild(wrap);
   });
+
+  // Appliquer les conflits pour ce thème
+  applyConflicts(theme.id);
+}
+
+// ─── CONFLICT ENGINE ─────────────────────────────────────────────────────────
+function applyConflicts(currentThemeId) {
+  const zone = document.getElementById('cards-zone');
+  if (!zone) return;
+  const allWraps = zone.querySelectorAll('.card-wrap');
+
+  // Build set of conflicted card labels for this theme
+  const conflictedLabels = new Set();
+
+  CONFLICTS.forEach(rule => {
+    if (rule.thenTheme !== currentThemeId) return;
+    // Check if the "if" condition is already selected
+    const ifSelected = (selectedCards[rule.ifTheme] || []).some(c => c.label === rule.ifCard);
+    if (ifSelected) {
+      conflictedLabels.add(rule.thenCard);
+    }
+  });
+
+  // Apply / remove .conflicted on each card wrap
+  allWraps.forEach(wrap => {
+    const label = wrap.querySelector('.card-label')?.textContent?.trim();
+    if (!label) return;
+    if (conflictedLabels.has(label)) {
+      wrap.classList.add('conflicted');
+    } else {
+      wrap.classList.remove('conflicted');
+    }
+  });
 }
 
 function onCardClick(wrap, card, theme) {
   if (wrap.classList.contains('locked')) return;
+  if (wrap.classList.contains('conflicted')) return;
 
   const zone = document.getElementById('cards-zone');
   const allCards = zone.querySelectorAll('.card-wrap');
@@ -1401,12 +1557,19 @@ function openAdmin() {
       emoji: c.emoji,
       bg: [...(c.bg||['#fce7f3','#fbcfe8'])],
       colors: c.colors ? [...c.colors] : undefined,
-      draw: c.draw // keep ref for now
+      draw: c.draw
     }))
   }));
+  // Init conflicts working copy
+  conflictsData = CONFLICTS.map(r => ({ ...r }));
   renderAdmin();
   document.getElementById('admin-overlay').classList.add('open');
   document.getElementById('admin-panel').classList.add('open');
+  // Reset to categories tab
+  document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.admin-tab-content').forEach(c => c.classList.remove('active'));
+  document.querySelector('.admin-tab[data-tab="categories"]').classList.add('active');
+  document.getElementById('admin-body').classList.add('active');
 }
 
 function closeAdmin() {
@@ -1515,8 +1678,12 @@ function adminSave() {
       }))
     });
   });
+  // Merge conflictsData back into CONFLICTS
+  CONFLICTS.length = 0;
+  conflictsData.forEach(r => CONFLICTS.push({ ...r }));
   // Sauvegarde dans localStorage
   saveThemesToStorage();
+  saveConflictsToStorage();
   showSavedToast();
   closeAdmin();
   restart();
@@ -1705,11 +1872,149 @@ function buildDrawMap() {
 
 function resetStorage() {
   localStorage.removeItem(STORAGE_KEY);
+  localStorage.removeItem(STORAGE_KEY + '_conflicts');
+}
+
+function saveConflictsToStorage() {
+  try {
+    localStorage.setItem(STORAGE_KEY + '_conflicts', JSON.stringify(CONFLICTS));
+  } catch(e) {
+    console.warn('Impossible de sauvegarder les conflits', e);
+  }
+}
+
+function loadConflictsFromStorage() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY + '_conflicts');
+    if (!raw) return false;
+    const saved = JSON.parse(raw);
+    if (!Array.isArray(saved)) return false;
+    CONFLICTS.length = 0;
+    saved.forEach(r => CONFLICTS.push(r));
+    return true;
+  } catch(e) {
+    console.warn('Erreur lors du chargement des conflits', e);
+    return false;
+  }
+}
+
+// ─── ADMIN CONFLICTS UI ──────────────────────────────────────────────────────
+let conflictsData = []; // copie de travail dans l'admin
+
+function openAdminConflicts() {
+  conflictsData = CONFLICTS.map(r => ({ ...r }));
+  renderConflicts();
+}
+
+function renderConflicts() {
+  const list = document.getElementById('conflicts-list');
+  list.innerHTML = '';
+
+  conflictsData.forEach((rule, ri) => {
+    const div = document.createElement('div');
+    div.className = 'conflict-rule';
+
+    // Construire les options pour les selects
+    const themeOptions = THEMES.map(t =>
+      `<option value="${t.id}" ${t.id === rule.ifTheme ? 'selected' : ''}>${t.emoji} ${t.label}</option>`
+    ).join('');
+
+    const ifTheme = THEMES.find(t => t.id === rule.ifTheme);
+    const ifCardOptions = (ifTheme ? ifTheme.cards : []).map(c =>
+      `<option value="${c.label}" ${c.label === rule.ifCard ? 'selected' : ''}>${c.emoji} ${c.label}</option>`
+    ).join('');
+
+    const thenThemeOptions = THEMES.map(t =>
+      `<option value="${t.id}" ${t.id === rule.thenTheme ? 'selected' : ''}>${t.emoji} ${t.label}</option>`
+    ).join('');
+
+    const thenTheme = THEMES.find(t => t.id === rule.thenTheme);
+    const thenCardOptions = (thenTheme ? thenTheme.cards : []).map(c =>
+      `<option value="${c.label}" ${c.label === rule.thenCard ? 'selected' : ''}>${c.emoji} ${c.label}</option>`
+    ).join('');
+
+    div.innerHTML = `
+      <div class="conflict-rule-header">
+        <span class="conflict-rule-label">Règle ${ri + 1}</span>
+        <button class="conflict-rule-del" onclick="conflictDelRule(${ri})">✕</button>
+      </div>
+      <div class="conflict-if">
+        <span class="conflict-badge if-badge">Si</span>
+        <select class="conflict-select" onchange="conflictSetIfTheme(${ri}, this.value)">${themeOptions}</select>
+        <span style="font-size:.75rem;color:#b07090;font-weight:700">=</span>
+        <select class="conflict-select" onchange="conflictSetIfCard(${ri}, this.value)">${ifCardOptions}</select>
+      </div>
+      <div class="conflict-then">
+        <span class="conflict-badge then-badge">Alors griser</span>
+        <select class="conflict-select" onchange="conflictSetThenTheme(${ri}, this.value)">${thenThemeOptions}</select>
+        <span style="font-size:.75rem;color:#b07090;font-weight:700">=</span>
+        <select class="conflict-select" onchange="conflictSetThenCard(${ri}, this.value)">${thenCardOptions}</select>
+      </div>`;
+    list.appendChild(div);
+  });
+}
+
+function conflictDelRule(ri) {
+  conflictsData.splice(ri, 1);
+  renderConflicts();
+}
+
+function conflictSetIfTheme(ri, val) {
+  conflictsData[ri].ifTheme = val;
+  const theme = THEMES.find(t => t.id === val);
+  conflictsData[ri].ifCard = theme && theme.cards.length ? theme.cards[0].label : '';
+  renderConflicts();
+}
+
+function conflictSetIfCard(ri, val) {
+  conflictsData[ri].ifCard = val;
+}
+
+function conflictSetThenTheme(ri, val) {
+  conflictsData[ri].thenTheme = val;
+  const theme = THEMES.find(t => t.id === val);
+  conflictsData[ri].thenCard = theme && theme.cards.length ? theme.cards[0].label : '';
+  renderConflicts();
+}
+
+function conflictSetThenCard(ri, val) {
+  conflictsData[ri].thenCard = val;
+}
+
+function conflictAddRule() {
+  const ifTheme = THEMES[0];
+  const thenTheme = THEMES[1] || THEMES[0];
+  conflictsData.push({
+    ifTheme:  ifTheme.id,
+    ifCard:   ifTheme.cards[0]?.label || '',
+    thenTheme: thenTheme.id,
+    thenCard:  thenTheme.cards[0]?.label || ''
+  });
+  renderConflicts();
+  document.getElementById('conflicts-list').lastElementChild?.scrollIntoView({ behavior: 'smooth' });
+}
+
+// ─── ADMIN TAB SWITCHING ──────────────────────────────────────────────────────
+function initAdminTabs() {
+  document.querySelectorAll('.admin-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.admin-tab-content').forEach(c => c.classList.remove('active'));
+      tab.classList.add('active');
+      const target = tab.dataset.tab;
+      if (target === 'categories') {
+        document.getElementById('admin-body').classList.add('active');
+      } else if (target === 'conflicts') {
+        document.getElementById('admin-conflicts-body').classList.add('active');
+        openAdminConflicts();
+      }
+    });
+  });
 }
 
 // ─── INIT ────────────────────────────────────────────────────────────────────
-// Charge les thèmes sauvegardés s'ils existent
 loadThemesFromStorage();
+loadConflictsFromStorage();
 showTheme(0);
 
 document.getElementById('admin-btn').addEventListener('click', openAdmin);
@@ -1718,7 +2023,9 @@ document.getElementById('admin-overlay').addEventListener('click', closeAdmin);
 document.getElementById('admin-save-btn').addEventListener('click', adminSave);
 document.getElementById('admin-reset-btn').addEventListener('click', adminReset);
 document.getElementById('admin-add-cat-btn').addEventListener('click', adminAddCategory);
+document.getElementById('admin-add-conflict-btn').addEventListener('click', conflictAddRule);
 document.getElementById('emoji-search').addEventListener('input', function() { filterEmoji(this.value); });
+initAdminTabs();
 </script>
 </body>
 </html>
